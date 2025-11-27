@@ -31,15 +31,18 @@ graph TD
     B --> C[julia-repl-server/ directory]
     C --> D[julia_server_launcher.jl]
     C --> E[package_manager.jl]
+
     A --> F[Package Detection]
     F --> E
     E --> G[User's .jl files]
     G --> E
-    A --> H[Julia Server]
-    H --> I[julia_command.txt]
-    I --> J[julia_response.txt]
+
+    D --> H[Background Julia Server]
+
+    A -- "write julia_command.txt" --> I[julia_command.txt]
+    I --> H
+    H -- "write julia_response.txt" --> J[julia_response.txt]
     J --> A
-    D --> H
 
     style C fill:#e1f5fe
     style H fill:#f3e5f5
