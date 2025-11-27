@@ -9,34 +9,66 @@ description: This skill should be used when users need to execute Julia code wit
 
 提供零编译时间的Julia开发环境。通过维持持久的Julia REPL服务器会话，消除Julia编译等待时间。
 
-## Architecture Overview
+## Skill Setup and Architecture
+
+### 安装要求
+
+当调用此技能时，请在用户工作目录下创建 `julia-repl-server/` 目录，并将技能组件复制到该目录：
+
+```bash
+# 创建技能目录
+mkdir julia-repl-server
+
+# 复制技能文件到该目录
+# (包含 scripts/, references/, assets/, SKILL.md 等)
+```
+
+### Architecture Overview
 
 ```mermaid
-graph LR
-    A[Claude Code] --> B[Julia Server]
-    A --> C[Package Manager]
-    B --> D[julia_command.txt]
-    D --> E[julia_response.txt]
-    E --> A
-    C --> F[User's .jl files]
-    F --> C
+graph TD
+    A[Claude Code] --> B[Skill Environment Setup]
+    B --> C[julia-repl-server/ directory]
+    C --> D[julia_server_launcher.jl]
+    C --> E[package_manager.jl]
+    A --> F[Package Detection]
+    F --> E
+    E --> G[User's .jl files]
+    G --> E
+    A --> H[Julia Server]
+    H --> I[julia_command.txt]
+    I --> J[julia_response.txt]
+    J --> A
+    D --> H
+
+    style C fill:#e1f5fe
+    style H fill:#f3e5f5
+    subgraph "Background Process"
+        H
+    end
 ```
 
 ### 核心组件
 
-1. **Julia服务器** (`scripts/julia_server_launcher.jl`)
-   - 持续运行的后台Julia进程
+1. **技能环境设置**
+   - 创建 `julia-repl-server/` 目录
+   - 复制技能文件到用户环境
+   - 设置Julia包环境
+
+2. **Julia服务器** (`julia-repl-server/scripts/julia_server_launcher.jl`)
+   - **后台运行**的持久Julia进程
    - 文件通信机制：`julia_command.txt` ↔ `julia_response.txt`
    - 预加载核心包：Revise, BenchmarkTools
 
-2. **智能包管理器** (`scripts/package_manager.jl`)
+3. **智能包管理** (`julia-repl-server/scripts/package_manager.jl`)
    - 自动扫描用户目录中的 `.jl` 文件
    - 提取 `using`/`import` 语句中的包名
    - 智能安装检测到的包依赖
 
-3. **通信协议**
+4. **通信协议**
    - 客户端写入命令到 `julia_command.txt`
    - 服务器读取、执行并返回结果到 `julia_response.txt`
+   - **服务器在Claude Code后台持续运行**
 
 ## How to Use
 
@@ -56,8 +88,10 @@ setup_minimal_environment()
 ### 2. 启动Julia服务器
 
 ```bash
-# 启动持久服务器（一次性）
-julia --project=. scripts/julia_server_launcher.jl
+# 启动持久服务器（在Claude Code后台运行）
+julia --project=. julia-repl-server/scripts/julia_server_launcher.jl
+
+# 服务器将在后台持续运行，支持零等待代码执行
 ```
 
 ### 3. 执行Julia代码

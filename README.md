@@ -18,21 +18,21 @@
 
 ## 🚀 快速开始
 
-### 1. 设置环境
+### 1. 环境设置
 
 ```bash
-# 进入技能目录
-cd julia-repl-server
-
-# 自动检测并安装包依赖
-julia scripts/package_manager.jl
+# 技能会自动创建 julia-repl-server/ 目录并复制组件
+# 在用户工作目录执行环境设置
+julia julia-repl-server/scripts/package_manager.jl
 ```
 
 ### 2. 启动服务器
 
 ```bash
-# 启动持久Julia服务器
-julia scripts/julia_server_launcher.jl
+# 启动持久Julia服务器（在后台运行）
+julia julia-repl-server/scripts/julia_server_launcher.jl
+
+# 服务器在Claude Code后台持续运行，支持零等待代码执行
 ```
 
 ### 3. 使用技能
