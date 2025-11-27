@@ -5,174 +5,176 @@
 [![Julia](https://img.shields.io/badge/Julia-1.12+-blue.svg)](https://julialang.org)
 [![Claude Skill](https://img.shields.io/badge/Claude%20Skill-v1.0-orange.svg)](https://claude.com/claude-code)
 
-**零等待Julia开发环境**
+**Zero-Wait Julia Development Environment**
 
 </div>
 
-## 📋 核心功能
+## ✨ Key Features
 
-- **⚡ 零编译时间** - 平均响应时间仅 1.136μs
-- **🔄 热重载支持** - 基于 Revise.jl 的即时代码更新
-- **📦 智能包管理** - 自动检测并安装用户代码所需的包
-- **🛡️ 错误隔离** - 错误不会中断服务器会话
+- **⚡ Zero Compilation Time** - Average response time: 1.136μs
+- **🔄 Hot Reload Support** - Revise.jl powered instant code updates
+- **📦 Smart Package Management** - Auto-detect and install user dependencies
+- **🛡️ Error Isolation** - Errors won't terminate your development session
+- **💻 Persistent REPL** - Background Julia server maintains state
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 1. 环境设置
+### Step 1: Environment Setup
 
 ```bash
-# 技能会自动创建 julia-repl-server/ 目录并复制组件
-# 在用户工作目录执行环境设置
+# Skill automatically creates julia-repl-server/ directory with all components
+# Run package detection and installation
 julia julia-repl-server/scripts/package_manager.jl
 ```
 
-### 2. 启动服务器
+### Step 2: Start Server
 
 ```bash
-# 启动持久Julia服务器（在后台运行）
+# Launch persistent Julia server (runs in background)
 julia julia-repl-server/scripts/julia_server_launcher.jl
-
-# 服务器在Claude Code后台持续运行，支持零等待代码执行
 ```
 
-### 3. 使用技能
-
-在 Claude Code 中：
+### Step 3: Use in Claude Code
 
 ```julia
-# 执行你的Julia文件
+# Execute your Julia files
 execute_julia("include(\"my_analysis.jl\")")
 
-# 热重载执行（代码修改后立即生效）
+# Hot reload (code changes take effect immediately)
 execute_julia("includet(\"my_functions.jl\")")
 
-# 执行Julia命令
+# Execute commands directly
 execute_julia("using DataFrames; df = DataFrame(x=1:100, y=rand(100))")
 ```
 
-## 📁 项目结构
+## 🏗️ Architecture
+
+The skill uses file-based communication between Claude Code and a persistent Julia server:
+
+```
+Claude Code ──write──► julia_command.txt ──read──► Julia Server
+Claude Code ◄─read─── julia_response.txt ◄─write─── Julia Server
+```
+
+**Key Components:**
+- **Persistent Julia Server** - Background process with preloaded packages
+- **Smart Package Manager** - Scans user code for dependencies
+- **File Communication** - Zero-latency command/response system
+
+## 📁 Project Structure
 
 ```
 julia-repl-server/
-├── SKILL.md                           # 技能定义文件
-├── scripts/                           # 核心脚本
-│   ├── julia_server_launcher.jl       # Julia服务器
-│   └── package_manager.jl             # 智能包管理器
-├── references/                        # 参考文档
-│   ├── julia_packages_guide.md        # Julia包使用指南
-│   └── performance_benchmarks.md      # 性能基准测试
-└── assets/                            # 资源文件
-    ├── project_templates/             # 项目模板
-    ├── sample_datasets/               # 示例数据
-    └── visualization_templates/       # 可视化模板
+├── SKILL.md                           # Skill definition
+├── scripts/                           # Core functionality
+│   ├── julia_server_launcher.jl       # Julia server with monitoring
+│   └── package_manager.jl             # Smart package detection
+├── references/                        # Documentation
+│   ├── julia_packages_guide.md        # Package usage guide
+│   └── performance_benchmarks.md      # Benchmark procedures
+└── assets/                            # Resources
+    ├── project_templates/             # Julia project templates
+    ├── sample_datasets/               # Sample data
+    └── visualization_templates/       # Plot templates
 ```
 
-## 🎯 核心特性
+## 💡 Usage Examples
 
-### 智能包管理
-
-自动扫描用户目录中的 `.jl` 文件，检测 `using`/`import` 语句：
+### Data Science Workflow
 
 ```julia
-# 你的 my_analysis.jl 包含：
-# using DataFrames, CSV, Plots
-
-# 自动检测并安装：
-quick_auto_setup()
-```
-
-### 热重载开发
-
-```julia
-# 使用 Revise.jl 支持代码修改后立即生效
-execute_julia("includet(\"my_code.jl\")")
-
-# 修改代码后直接测试，无需重启
-execute_julia("my_function(test_data)")
-```
-
-### 性能表现
-
-| 测试项目 | 结果 |
-|----------|------|
-| **平均执行时间** | **1.136μs** |
-| **20×20矩阵乘法** | **14.08 GFLOPS** |
-| **内存分配** | **3287 bytes** |
-| **启动等待** | **零（一次性）** |
-
-## 💡 使用示例
-
-### 数据科学工作流
-
-```julia
-# 1. 设置环境
+# Setup environment (auto-detect dependencies)
 quick_auto_setup()
 
-# 2. 加载数据
+# Load and analyze data
 execute_julia("using CSV, DataFrames; df = CSV.read(\"data.csv\", DataFrame)")
-
-# 3. 数据分析
 execute_julia("describe(df)")
 
-# 4. 可视化
-execute_julia("using Plots; plot(df.x, df.y)")
+# Visualize results
+execute_julia("using Plots; plot(df.x, df.y, title=\"Analysis\")")
 ```
 
-### 科学计算工作流
+### Scientific Computing
 
 ```julia
-# 1. 环境设置
-setup_julia_environment("tensor_network.jl")
+# Environment setup for specific file
+setup_julia_environment("tensor_calc.jl")
 
-# 2. 执行计算
-execute_julia("include(\"tensor_network.jl\")")
+# Execute with hot reload
+execute_julia("includet(\"tensor_calc.jl\")")
 
-# 3. 性能测试
-execute_julia("@benchmark my_tensor_calculation()")
+# Performance benchmarking
+execute_julia("@benchmark my_tensor_operation()")
 ```
 
-## 🔧 故障排除
+### Development Workflow
 
-### 常见问题
+```julia
+# Iterative development with instant feedback
+execute_julia("includet(\"my_code.jl\")")
+# Edit my_code.jl...
+execute_julia("my_function(test_data)")  # Changes take effect immediately
+```
 
-**服务器无响应：**
+## 📊 Performance
+
+| Metric | Result |
+|--------|--------|
+| **Average Execution Time** | **1.136μs** |
+| **20×20 Matrix Multiplication** | **14.08 GFLOPS** |
+| **Memory Allocation** | **3287 bytes** |
+| **Startup Wait** | **Zero (one-time)** |
+
+## 🔧 Troubleshooting
+
+**Server Unresponsive:**
 ```bash
-# 重启服务器
-julia scripts/julia_server_launcher.jl
+# Restart server
+julia julia-repl-server/scripts/julia_server_launcher.jl
 ```
 
-**包导入失败：**
+**Package Import Failed:**
 ```julia
-# 重新安装包
+# Rebuild package
 execute_julia("using Pkg; Pkg.build(\"PackageName\")")
 ```
 
-**内存不足：**
+**Memory Issues:**
 ```julia
-# 清理内存
+# Clear memory
 execute_julia("GC.gc()")
 ```
 
-## 📊 性能基准
+## 🎯 Core Concepts
 
-### 标准测试
+### Smart Package Detection
+The package manager automatically scans your `.jl` files for `using` and `import` statements:
 
 ```julia
-# 矩阵运算性能
-execute_julia("@benchmark rand(1000, 1000) * rand(1000, 1000)")
+# your_file.jl contains:
+# using DataFrames, CSV, Plots
 
-# 数据处理性能
-execute_julia("@benchmark filter(row -> row.x > 0.5, df)")
-
-# 内存使用
-execute_julia("Base.gc_live_bytes() / (1024^2)")  # MB
+# Auto-detection and installation:
+quick_auto_setup()  # Installs DataFrames, CSV, Plots
 ```
 
-## 🤝 贡献
+### Hot Reload Development
+Use Revise.jl for instant code updates:
 
-基于原始 [`julia_server_for_Claude_Code`](../) 项目改进，专为 Claude Code 技能化而设计。
+```julia
+execute_julia("includet(\"my_code.jl\")")
+# Edit my_code.jl, changes take effect immediately
+execute_julia("my_function()")  # Uses updated code
+```
 
-## 📄 许可证
+### Zero-Wait Execution
+Maintain persistent server state for instant command execution without Julia compilation delays.
+
+## 🤝 Contributing
+
+Based on the original [`julia_server_for_Claude_Code`](../) project, specifically designed for Claude Code skill integration.
+
+## 📄 License
 
 MIT License
 
@@ -180,8 +182,8 @@ MIT License
 
 <div align="center">
 
-**🚀 立即体验零等待的Julia开发！**
+**🚀 Experience Zero-Wait Julia Development!**
 
-*零编译时间 + 热重载 + 智能包管理*
+*Zero Compilation Time + Hot Reload + Smart Package Management*
 
 </div>
